@@ -3,14 +3,24 @@ from pybit.unified_trading import HTTP
 import time
 import sys
 import math
+import getpass
+
+pedirnombreparaidentificar = input("INGRESE SU NOMBRE PARA RECONOCER DE QUIEN ES EL BOT: ")
+pedirapipublica = getpass.getpass("INGRESE SU API PUBLICA(NO SE MOSTRARA): ")
+pedirapiprivada = getpass.getpass("INGRESE SU API PRIVADA(NO SE MOSTRARA): ")
+pedirpuerto = input("Ingrese el puerto que luis le indique por ejemplo: 5001-5002")
+
+API_PUBLICA = pedirapipublica
+API_PRIVADA = pedirapiprivada
 
 # Configuración de la sesión para demo trading
 session = HTTP(
-    api_key="86GxUJS1f3XuVhwsR2",
-    api_secret="ELMT4U9gt9lXZwLlZA0IqIyHYkVGm1nd31yM",
+    api_key=API_PUBLICA,
+    api_secret=API_PRIVADA,
     demo=True,
     recv_window=10000
 )
+
 
 app = Flask(__name__)
 
@@ -453,8 +463,7 @@ def vigilar_posicion():
                         time.sleep(10)
                 else:
                     # Si no hay posiciones abiertas, TP o SL ha sido alcanzado
-                    print("TP o SL tomado, reiniciando valores y cancelando ordenes para evitar conflictos con las posiciones futuras...") 
-                    calcular_ganancia_perdida()
+                    print("TP o SL tomado, reiniciando valores y cancelando ordenes para evitar conflictos con las posiciones futuras...")
                     cancelar_ordenes_existentes()
                     MonedasEnLaPosicion = 0
                     RecomprasEjecutadas = 0
@@ -468,6 +477,7 @@ def vigilar_posicion():
                 RecomprasEjecutadas = 0
                 PrecioDeEntradaEnLaPosicion = 0
                 DireccionDeLaPosicion = "None"
+                calcular_ganancia_perdida()
                 CapitalDeLaCuenta = obtener_valor_cuenta()
                 recalcular_recompras()
                 break  # Salir del bucle
@@ -558,14 +568,14 @@ def cancelar_ordenes_existentes():
 
 def calcular_ganancia_perdida():
     global CapitalDeLaCuenta
-    nuevaCantidadDeLaCuenta = float(obtener_valor_cuenta())
-    viejaCantidadDeLaCuenta = float(CapitalDeLaCuenta)
+    nuevaCantidadDeLaCuenta = obtener_valor_cuenta()
+    viejaCantidadDeLaCuenta = CapitalDeLaCuenta
     Ganancia_Perdida = nuevaCantidadDeLaCuenta - viejaCantidadDeLaCuenta
     Ganancia_Perdida_Porcentaje = (Ganancia_Perdida / viejaCantidadDeLaCuenta) * 100
     if nuevaCantidadDeLaCuenta <= viejaCantidadDeLaCuenta:
-        return print("Nuevo valor de la cuenta: " + str(nuevaCantidadDeLaCuenta) + "$ Anterior valor de la cuenta: " + str(viejaCantidadDeLaCuenta) + "$ Perdida de: " + str(Ganancia_Perdida) + "$ Porcentaje: " + str(Ganancia_Perdida_Porcentaje) + "%")
+        return print("$ Anterior valor de la cuenta: " + str(viejaCantidadDeLaCuenta) + "Nuevo valor de la cuenta: " + str(nuevaCantidadDeLaCuenta) + "$ Perdida de: " + str(Ganancia_Perdida) + "$ Porcentaje: " + str(Ganancia_Perdida_Porcentaje) + "%")
     elif nuevaCantidadDeLaCuenta >= viejaCantidadDeLaCuenta:
-        return print("Nuevo valor de la cuenta: " + str(nuevaCantidadDeLaCuenta) + "$ Anterior valor de la cuenta: " + str(viejaCantidadDeLaCuenta) + "$ Ganancia de: " + str(Ganancia_Perdida) + "$ Porcentaje: " + str(Ganancia_Perdida_Porcentaje) + "%")
+        return print("$ Anterior valor de la cuenta: " + str(viejaCantidadDeLaCuenta) + "Nuevo valor de la cuenta: " + str(nuevaCantidadDeLaCuenta) + "$ Ganancia de: " + str(Ganancia_Perdida) + "$ Porcentaje: " + str(Ganancia_Perdida_Porcentaje) + "%")
     else:
         return print("NO SE PUDO CALCULAR EL VALOR DE LA GANANCIA PERDIDA")
 
@@ -624,4 +634,4 @@ if __name__ == '__main__':
     PreguntarParametros()
     VerificarSiExistenPosicionesaliniciar()
     Calculo_riesgo_atomar()
-    app.run(host='0.0.0.0', port=80)
+    app.run(host='0.0.0.0', port=pedirpuerto)
